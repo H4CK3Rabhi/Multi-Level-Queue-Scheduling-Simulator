@@ -164,21 +164,21 @@ int main()
 {
         ReadyQueue1 =(struct Queue*) malloc(sizeof(struct Queue));
         ReadyQueue2 =(struct Queue*) malloc(sizeof(struct Queue));
-	printf("Please enter No of processes to schedule");
+	printf("\t\tPlease enter No of processes to schedule  =>");
 	scanf("%d",&n);
-	printf("\n Please Enter Time qunatum");
+	printf("\n\t\tPlease Enter Time Quantum  =>");
 	scanf("%d",&TimeQuantum);
 	pa=(struct Process_Struct *)malloc(sizeof(struct Process_Struct)*n);
 	for(int i=0;i<n;i++)
 	{
-             printf("\n\n Enter Process Id For %d Process",(i+1));
+             printf("\n\n\t\tEnter Process Id For %d Process  =>",(i+1));
 	     scanf("%d",&(pa[i].pid));
-	     printf("\n Enter arrival time For %d Process",(i+1));
+	     printf("\n\t\tEnter arrival time For %d Process  =>",(i+1));
 	     scanf("%d",&(pa[i].at));
-	     printf("\n Enter Execution time For %d Process",(i+1));
+	     printf("\n\t\tEnter Execution time For %d Process  =>",(i+1));
 	     scanf("%d",&(pa[i].timeleft)); 
 
-	     printf("\n Enter QueueNo For %d Process",(i+1));
+	     printf("\n\t\tEnter QueueNo For %d Process =>",(i+1));
 	     scanf("%d",&(pa[i].qno)); 
            
              pa[i].exect=pa[i].timeleft;
