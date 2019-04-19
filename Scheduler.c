@@ -9,7 +9,7 @@
 #define SRT 0
 #define RR 1
 
-int nowtime=0,time_since_last_ct=0,ALLEXIT=0,CT=1,n,CURRMODE=RR,ALREADYRUNNING=0,TimeQuantum;
+int nowtime=0,time_since_last_ct=0,ALLEXIT=0,CT=1,n,CURRMODE=RR,ALREADYRUNNING=0,TimeQuantum,i,j;
 struct Process_Struct 
 {
 	int pid;
@@ -132,7 +132,7 @@ if(ReadyQueue2->front==NULL)
 }
 void updateQueue()
 {
-           int count=0,i;
+           int count=0;
            for(i=0;i<n;i++)
 	   {
                    
@@ -169,7 +169,7 @@ int main()
 	printf("\n\t\tPlease Enter Time Quantum  =>");
 	scanf("%d",&TimeQuantum);
 	pa=(struct Process_Struct *)malloc(sizeof(struct Process_Struct)*n);
-	for(int i=0;i<n;i++)
+	for(i=0;i<n;i++)
 	{
              printf("\n\n\t\tEnter Process Id For %d Process  =>",(i+1));
 	     scanf("%d",&(pa[i].pid));
@@ -186,7 +186,7 @@ int main()
 	        
 	}
            struct Process_Struct key; 
-    int i,j;
+   
     for (i = 1; i < n; i++) { 
         key = pa[i]; 
         j = i - 1; 
@@ -384,7 +384,7 @@ int main()
       int sumwt=0,sumtat=0;
 printf("\n\n\tPID\t\tAT\t\tbt\t\tCT\t\tTAT\t\tWT\n");
 printf("==========================================================================================================================\n");
-for(int i=0;i<n;i++)
+for(i=0;i<n;i++)
 	{
            printf("\t%d\t\t%d\t\t%d\t\t%d\t\t%d\t\t%d\n",pa[i].pid,pa[i].at,pa[i].exect,pa[i].ct,pa[i].tat,pa[i].wt);
            sumwt+=pa[i].wt;
