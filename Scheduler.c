@@ -1,4 +1,7 @@
+#include<pthread.h>
 #include<stdio.h>
+#include<unistd.h>
+#include<sys/wait.h>
 #include<stdlib.h>
 
 #define NEW 0
@@ -9,23 +12,23 @@
 #define SRT 0
 #define RR 1
 
-int nowtime=0,time_since_last_ct=0,ALLEXIT=0,CT=1,n,CURRMODE=RR,ALREADYRUNNING=0,TimeQuantum,i,j;
-struct Process_Struct 
+int currenttime=0,runningtime=0,ALLEXIT=0,CT=1,n,CURRMODE=RR,ALREADYRUNNING=0,TimeQuantum;
+struct Proc 
 {
 	int pid;
 	int state;
 	int timeleft;
 	int at;
 	int wt,tat,ct,exect,qno;
-	struct Process_Struct *prev;
-	struct Process_Struct *next;
+	struct Proc *prev;
+	struct Proc *next;
 } *pa;
 struct Queue
 {
-	struct Process_Struct *front ,*rear;
+	struct Proc *front ,*rear;
 }*ReadyQueue1,*ReadyQueue2;
 
-void enqueuep(struct Process_Struct *p)
+void enqueuep(struct Proc *p)
 {
 	if(ReadyQueue1->front==NULL)
 	{
@@ -61,7 +64,7 @@ void enqueuep(struct Process_Struct *p)
 		}
 		else
 		{
-                   struct Process_Struct *start=ReadyQueue1->front->next;
+                   struct Proc *start=ReadyQueue1->front->next;
 		   while(start->timeleft<p->timeleft)
 		   {
 			   start=start->next;
@@ -84,13 +87,13 @@ void enqueuep(struct Process_Struct *p)
 		}
 	}
 }
-struct Process_Struct *  deQueuep()
+struct Proc *  deQueuep()
 {
      if(ReadyQueue1->front==NULL)
      {
 	     return NULL;
      }
-     struct Process_Struct * temp=ReadyQueue1->front;
+     struct Proc * temp=ReadyQueue1->front;
      ReadyQueue1->front=ReadyQueue1->front->next;
      temp->next=NULL;
      if(ReadyQueue1->front==NULL)
@@ -100,7 +103,7 @@ struct Process_Struct *  deQueuep()
      return temp;
 }
 
-void enqueue(struct Process_Struct *p)
+void enqueue(struct Proc *p)
 {
       if(ReadyQueue2->front==NULL)
       { 
@@ -115,13 +118,13 @@ void enqueue(struct Process_Struct *p)
      ReadyQueue2->rear->next=p;
      ReadyQueue2->rear=p;
 }
-struct Process_Struct * deQueue()
+struct Proc * deQueue()
 {
 if(ReadyQueue2->front==NULL)
      {
 	     return NULL;
      }
-     struct Process_Struct * temp=ReadyQueue2->front;
+     struct Proc * temp=ReadyQueue2->front;
      ReadyQueue2->front=ReadyQueue2->front->next;
      temp->next=NULL;
      if(ReadyQueue2->front==NULL)
@@ -133,10 +136,10 @@ if(ReadyQueue2->front==NULL)
 void updateQueue()
 {
            int count=0;
-           for(i=0;i<n;i++)
+           for(int i=0;i<n;i++)
 	   {
                    
-		   if(pa[i].state == NEW && nowtime>=pa[i].at)
+		   if(pa[i].state == NEW && currenttime>=pa[i].at)
 		   {      
 			   if(pa[i].qno==1)
                            {
@@ -164,29 +167,29 @@ int main()
 {
         ReadyQueue1 =(struct Queue*) malloc(sizeof(struct Queue));
         ReadyQueue2 =(struct Queue*) malloc(sizeof(struct Queue));
-	printf("\t\tPlease enter No of processes to schedule  =>");
+	printf("Please enter No of processes to schedule");
 	scanf("%d",&n);
-	printf("\n\t\tPlease Enter Time Quantum  =>");
+	printf("\n Please Enter Time qunatum");
 	scanf("%d",&TimeQuantum);
-	pa=(struct Process_Struct *)malloc(sizeof(struct Process_Struct)*n);
-	for(i=0;i<n;i++)
+	pa=(struct Proc *)malloc(sizeof(struct Proc)*n);
+	for(int i=0;i<n;i++)
 	{
-             printf("\n\n\t\tEnter Process Id For %d Process  =>",(i+1));
+             printf("\n\n Enter Process Id For %d Process",(i+1));
 	     scanf("%d",&(pa[i].pid));
-	     printf("\n\t\tEnter arrival time For %d Process  =>",(i+1));
+	     printf("\n Enter arrival time For %d Process",(i+1));
 	     scanf("%d",&(pa[i].at));
-	     printf("\n\t\tEnter Execution time For %d Process  =>",(i+1));
+	     printf("\n Enter Execution time For %d Process",(i+1));
 	     scanf("%d",&(pa[i].timeleft)); 
 
-	     printf("\n\t\tEnter QueueNo For %d Process =>",(i+1));
+	     printf("\n Enter QueueNo For %d Process",(i+1));
 	     scanf("%d",&(pa[i].qno)); 
            
              pa[i].exect=pa[i].timeleft;
 	    pa[i].state=NEW;
 	        
 	}
-           struct Process_Struct key; 
-   
+           struct Proc key; 
+    int i,j;
     for (i = 1; i < n; i++) { 
         key = pa[i]; 
         j = i - 1; 
@@ -198,9 +201,7 @@ int main()
         pa[j + 1] = key; 
     } 
        
-        struct Process_Struct *pr=NULL;
-	struct Process_Struct *prev;
-      printf("\nGannt Chart :::::::::::::::::\n--------------------------------------------------------------------------------------------------------------------------------------------------\n");
+        struct Proc *pr=NULL;
        while(1)
        {
             updateQueue();
@@ -218,23 +219,18 @@ int main()
                      }
                       
 		    CURRMODE=SRT;
-                     time_since_last_ct=1;
-		     prev=pr;
+                     runningtime=1;
 	     	     pr=deQueuep();
-		     if(prev!=pr)
-		     {
-			     printf("%d | Process%d |",nowtime,pr->pid);
-		     }
              	     pr->state=RUNNING;
              	     pr->timeleft--;
-	             nowtime++;
-                    if(time_since_last_ct==pr->exect)
+	             currenttime++;
+                    if(runningtime==pr->exect)
                     {
                   	CT=1;
                         ALREADYRUNNING =0;
                   	pr->state=EXIT;
-                  	pr->ct=nowtime;
-                  	pr->tat=nowtime-pr->at;
+                  	pr->ct=currenttime;
+                  	pr->tat=currenttime-pr->at;
                         pr->wt=pr->tat-pr->exect;
                         pr=NULL;
            
@@ -248,22 +244,17 @@ int main()
           else if(ReadyQueue2->front!=NULL&& ReadyQueue1->front==NULL && pr==NULL && CT==1)
          {
                      CURRMODE=RR;
-                     time_since_last_ct=1;
-		     prev=pr;
+                     runningtime=1;
 	     	     pr=deQueue();
-             	     if(prev!=pr)
-		     {
-			     printf("%d | Process%d |",nowtime,pr->pid);
-		     }
-             	      pr->state=RUNNING;
+             	     pr->state=RUNNING;
              	     pr->timeleft--;
-	             nowtime++;
-                    if(time_since_last_ct==pr->exect)
+	             currenttime++;
+                    if(runningtime==pr->exect)
                     {
                   	CT=1;
                   	pr->state=EXIT;
-                  	pr->ct=nowtime;
-                  	pr->tat=nowtime-pr->at;
+                  	pr->ct=currenttime;
+                  	pr->tat=currenttime-pr->at;
                         pr->wt=pr->tat-pr->exect;
                         pr=NULL;
            
@@ -281,8 +272,8 @@ int main()
                   CT=1;
                   ALREADYRUNNING=0;
                   pr->state=EXIT;
-                  pr->ct=nowtime;
-                  pr->tat=nowtime-(pr->at);
+                  pr->ct=currenttime;
+                  pr->tat=currenttime-(pr->at);
                   pr->wt=(pr->tat)-(pr->exect);
                   pr=NULL;
                   continue;
@@ -300,17 +291,17 @@ int main()
                continue;
                }
              }    
-             time_since_last_ct++;
+             runningtime++;
              pr->timeleft--;
-            nowtime++;
+            currenttime++;
 
              if(pr->timeleft==0)
              {
                   CT=1;
                   ALREADYRUNNING=0;
                   pr->state=EXIT;
-                  pr->ct=nowtime;
-                  pr->tat=nowtime-(pr->at);
+                  pr->ct=currenttime;
+                  pr->tat=currenttime-(pr->at);
                   pr->wt=(pr->tat)-(pr->exect);
                   pr=NULL;
              }            
@@ -342,24 +333,24 @@ int main()
              {
                   CT=1;
                   pr->state=EXIT;
-                  pr->ct=nowtime;
-                  pr->tat=nowtime-(pr->at);
+                  pr->ct=currenttime;
+                  pr->tat=currenttime-(pr->at);
                   pr->wt=(pr->tat)-(pr->exect);
                   continue;
              }      
-             time_since_last_ct++;
+             runningtime++;
              pr->timeleft--;
-            nowtime++;
+            currenttime++;
 
              if(pr->timeleft==0)
              {
                   CT=1;
                   pr->state=EXIT;
-                  pr->ct=nowtime;
-                  pr->tat=nowtime-(pr->at);
+                  pr->ct=currenttime;
+                  pr->tat=currenttime-(pr->at);
                   pr->wt=(pr->tat)-(pr->exect);
              }            
-             else if(time_since_last_ct==TimeQuantum)
+             else if(runningtime==TimeQuantum)
              {
                 pr->state=READY;
                 enqueue(pr);
@@ -373,23 +364,17 @@ int main()
          }
         else
         {
-         printf("%d | IDLE |",nowtime);
-          nowtime++;
-
+          currenttime++;
          }
                  
        }
-       printf("%d\n",nowtime);
-       printf("----------------------------------------------------------------------------------------------------------------------------------------\n");
       int sumwt=0,sumtat=0;
-printf("\n\n\tPID\t\tAT\t\tbt\t\tCT\t\tTAT\t\tWT\n");
-printf("==========================================================================================================================\n");
-for(i=0;i<n;i++)
+for(int i=0;i<n;i++)
 	{
-           printf("\t%d\t\t%d\t\t%d\t\t%d\t\t%d\t\t%d\n",pa[i].pid,pa[i].at,pa[i].exect,pa[i].ct,pa[i].tat,pa[i].wt);
+           printf("\n\nprocess pid=%d\nct=%d\ntat=%d\nwt=%d",pa[i].pid,pa[i].ct,pa[i].tat,pa[i].wt);
            sumwt+=pa[i].wt;
            sumtat+=pa[i].tat;
            
 	}
-printf("\n\n Avergae TAT=%f \n Average WT=%f\n",(sumtat/(n*1.0)),(sumwt/(n*1.0)));
+printf("\n\n Avergae TAT=%f \n Average WT=%f",(sumtat/(n*1.0)),(sumwt/(n*1.0)));
 }
