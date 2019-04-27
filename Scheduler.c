@@ -345,6 +345,7 @@ int main()
                   pr->ct=nowtime;
                   pr->tat=nowtime-(pr->at);
                   pr->wt=(pr->tat)-(pr->exect);
+		  pr=NULL;
                   continue;
              }      
              time_since_last_ct++;
@@ -358,6 +359,7 @@ int main()
                   pr->ct=nowtime;
                   pr->tat=nowtime-(pr->at);
                   pr->wt=(pr->tat)-(pr->exect);
+		  pr=NULL;
              }            
              else if(time_since_last_ct==TimeQuantum)
              {
